@@ -16,7 +16,7 @@ Este projeto é um sistema de vigilância simples que usa uma webcam para detect
 
 ## Uso
 
-1. Abra o arquivo `index.html` no seu navegador.
+1. Abra o arquivo `camera.html` no seu navegador. Os outros arquivos devem estar na mesma pasta.
 2. Permita que o navegador acesse sua webcam.
 3. Selecione uma área no vídeo da webcam para monitorar o movimento.
 4. Ajuste a sensibilidade, o intervalo de alarme e o intervalo de verificação conforme necessário.

@@ -23,6 +23,8 @@ function checkForMotion() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
 
+    let movementDetectedAt = null;
+	
     if (previousFrame && sensitivityRect) {
         let diff = 0;
         for (let y = sensitivityRect.y; y < sensitivityRect.y + sensitivityRect.height; y++) {
@@ -31,30 +33,64 @@ function checkForMotion() {
                 const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
                 const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
                 const b = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
-                diff += r + g + b;
+                const pixelDiff = r + g + b;
+                diff += pixelDiff;
+
+                // Se movimento foi detectado e ainda não tínhamos a posição inicial
+                if (pixelDiff > sensitivitySlider.value && !movementDetectedAt) {
+                    movementDetectedAt = { x, y };
+                }
             }
         }
+
 
         if (diff > sensitivitySlider.value * 5000) {
-            if (Date.now() > nextAlarmTime) {
-                alarm.play();
-                nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
 
-                const snapshot = new Image();
-                snapshot.src = canvas.toDataURL();
-                snapshot.onload = () => {
-                    while (snapshots.children.length >= 5) {
-                        snapshots.removeChild(snapshots.children[0]);
-                    }
-                    snapshots.appendChild(snapshot);
-                };
+            
+            // Desenha uma seta apontando para a primeira detecção de movimento
+            if (movementDetectedAt) {
+
+				if (Date.now() > nextAlarmTime) {
+					alarm.play();
+					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
+					     // início da linha da seta
+					context.beginPath();
+					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
+					// desenhar linha central da seta para a direita
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
+					// desenhar linha superior da ponta da seta
+					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
+					// mover para a base da ponta da seta
+					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
+					// concluir a ponta da seta
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
+					context.strokeStyle = 'red';
+					context.lineWidth = 3;
+					context.stroke();
+
+					const snapshot = new Image();
+					snapshot.src = canvas.toDataURL();
+					snapshot.onload = () => {
+						while (snapshots.children.length >= 5) {
+							snapshots.removeChild(snapshots.children[0]);
+						}
+						snapshots.appendChild(snapshot);
+					};
+				}	
+				
+				
             }
+
+				
         }
     }
+
 
     previousFrame = currentFrame;
     setTimeout(checkForMotion, 200);
 }
+
+
 // Salvar valores no localStorage quando eles mudam
 sensitivitySlider.addEventListener('input', () => {
     sensitivityValue.textContent = sensitivitySlider.value;

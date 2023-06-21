@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						context.strokeStyle = 'red';
 						context.lineWidth = 3;
 						context.stroke();
+						// Criar um timestamp e desenhá-lo na imagem
+						const timestamp = new Date().toLocaleString();
+						context.font = '20px Arial';
+						context.fillStyle = 'red';
+						context.fillText(timestamp, 10, 30);
 
 						const snapshot = new Image();
 						snapshot.src = canvas.toDataURL();

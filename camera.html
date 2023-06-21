@@ -2,98 +2,8 @@
 <html>
     <head>
         <title>Webcam Access</title>
-        <style>
-            body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                margin: 0;
-                background: #FFF; /* Altere esta linha para a cor desejada, neste caso branco */
-            }
-
-            #videoContainer {
-                position: relative;
-                display: inline-block;
-            }
-
-            video {
-                display: block;
-                width: 640px;
-                height: 480px;
-                background: #222;
-            }
-
-            #overlay {
-                position: absolute;
-                border: 3px dashed red;
-                pointer-events: none;
-                z-index: 1;
-            }
-
-            #controls {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1rem;
-            }
-
-            .slider-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #snapshots {
-                display: flex;
-                justify-content: center;
-                gap: 1rem;
-            }
-
-            #snapshots img {
-                width: 100px;
-            }
-			
-			#modal {
-				display: none;
-				position: fixed;
-				z-index: 1;
-				padding-top: 100px;
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: 100%;
-				overflow: auto;
-				background-color: rgb(0,0,0);
-				background-color: rgba(0,0,0,0.9);
-			}
-
-			#modal-content {
-				margin: auto;
-				display: block;
-				width: 80%;
-				max-width: 700px;
-			}
-
-			#modal .close {
-				position: absolute;
-				top: 15px;
-				right: 35px;
-				color: #f1f1f1;
-				font-size: 40px;
-				font-weight: bold;
-				transition: 0.3s;
-			}
-
-			#modal .close:hover, #modal .close:focus {
-				color: #bbb;
-				text-decoration: none;
-				cursor: pointer;
-			}
-			
-        </style>
-
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<script src="camera.js" defer></script>
 
     </head>
     <body>
@@ -114,6 +24,15 @@
                 <label for="interval">Interval (ms): <span id="intervalValue">200</span></label>
                 <input type="range" min="20" max="1000" value="200" class="slider" id="interval">
             </div>
+			<label for="notificationsCheckbox">
+				<svg id="bellIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="16" height="16">
+					<path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7l-87.5-68.6c.5-1.7 .7-3.5 .7-5.4c0-27.6-11-54.1-30.5-73.7L512 320c-20.5-20.5-32-48.3-32-77.3V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32s-32 14.3-32 32V51.2c-42.6 8.6-79 34.2-102 69.3L38.8 5.1zM160 242.7c0 29-11.5 56.8-32 77.3l-1.5 1.5C107 341 96 367.5 96 395.2c0 11.5 9.3 20.8 20.8 20.8H406.2L160 222.1v20.7zM384 448H320 256c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7s18.7-28.3 18.7-45.3z"/>
+				</svg>
+				<span>Sound Alarm</span>
+				<input type="checkbox" id="notificationsCheckbox">
+			</label>
+
+		
         </div>
         <div id="snapshots"></div>
         <audio id="alarm" src="mixkit-digital-quick-tone-2866.wav" preload="auto"></audio>
@@ -121,7 +40,7 @@
 			<span class="close">&times;</span>
 			<img id="modal-content">
 		</div>			
-        <script src="camera.js"></script>
+
 	
     </body>
 </html>

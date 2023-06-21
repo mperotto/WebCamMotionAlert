@@ -22,6 +22,8 @@ Este projeto é um sistema de vigilância simples que usa uma webcam para detect
 4. Ajuste a sensibilidade, o intervalo de alarme e o intervalo de verificação conforme necessário.
 5. Se o sistema detectar movimento na área selecionada, ele tocará um alarme.
 
+![Screenshot of the application](/screenshot1.jpg)
+
 ## Desenvolvimento
 
 Este projeto é desenvolvido com HTML, CSS e JavaScript puro. Não depende de nenhuma biblioteca ou framework.

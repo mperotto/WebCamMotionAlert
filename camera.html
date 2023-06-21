@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Webcam Access</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                background: #FFF; /* Altere esta linha para a cor desejada, neste caso branco */
+            }
+
+            #videoContainer {
+                position: relative;
+                display: inline-block;
+            }
+
+            video {
+                display: block;
+                width: 640px;
+                height: 480px;
+                background: #222;
+            }
+
+            #overlay {
+                position: absolute;
+                border: 3px dashed red;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            #controls {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .slider-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #snapshots {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            #snapshots img {
+                width: 100px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="videoContainer">
+            <video autoplay="true" id="webcam"></video>
+            <div id="overlay"></div>
+        </div>
+        <div id="controls">
+            <div class="slider-container">
+                <label for="sensitivity">Sensitivity: <span id="sensitivityValue">500</span></label>
+                <input type="range" min="1" max="1000" value="500" class="slider" id="sensitivity">
+            </div>
+            <div class="slider-container">
+                <label for="alarmInterval">Alarm Interval (s): <span id="alarmIntervalValue">10</span></label>
+                <input type="range" min="1" max="30" value="10" class="slider" id="alarmInterval">
+            </div>
+            <div class="slider-container">
+                <label for="interval">Interval (ms): <span id="intervalValue">200</span></label>
+                <input type="range" min="20" max="1000" value="200" class="slider" id="interval">
+            </div>
+        </div>
+        <div id="snapshots"></div>
+        <audio id="alarm" src="mixkit-digital-quick-tone-2866.wav" preload="auto"></audio>
+        <script src="camera.js"></script>
+    </body>
+</html>

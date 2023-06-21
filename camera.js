@@ -80,7 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							while (snapshots.children.length >= 15) {
 								snapshots.removeChild(snapshots.children[0]);
 							}
-							snapshots.appendChild(snapshot);
+							//snapshots.appendChild(snapshot);
+							 snapshots.insertBefore(snapshot, snapshots.firstChild);
 							snapshot.onclick = function() {
 									const modal = document.getElementById('modal');
 									const modalImg = document.getElementById('modal-content');

@@ -86,3 +86,20 @@ video {
     text-decoration: none;
     cursor: pointer;
 }
+
+.bell-icon {
+    width: 16px;
+    height: 16px;
+    background-image: url('bell-solid.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.bell-icon-off {
+	width: 16px;
+    height: 16px;
+    background-image: url('bell-slash-solid.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+

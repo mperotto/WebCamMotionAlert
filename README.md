@@ -21,7 +21,8 @@ This project is a simple surveillance system that uses a webcam to detect moveme
 
 ![Screenshot of the application](/screenshot1.jpg)
 
-![See the code in action here](https://mperotto.github.io/WebCamMotionAlert)
+[Access the Camera Motion Alert project here](https://mperotto.github.io/WebCamMotionAlert/camera.html)
+
 
 ## Development
 

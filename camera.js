@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	let nextAlarmTime = 0;
 	let sensitivityRect = null;
 	let savedPreference = localStorage.getItem('notifications');
+	const totalSnapshots = 15;  // Defina o valor inicial aqui. Isso pode ser substituído por uma configuração do usuário.
 
 
 	function checkForMotion() {
@@ -82,22 +83,31 @@ document.addEventListener('DOMContentLoaded', function() {
 						context.font = '20px Arial';
 						context.fillStyle = 'red';
 						context.fillText(timestamp, 10, 30);
-
+						
+						
+						
+						
 						const snapshot = new Image();
 						snapshot.src = canvas.toDataURL();
 						snapshot.onload = () => {
-							while (snapshots.children.length >= 15) {
+							while (snapshots.children.length >= totalSnapshots) {
 								snapshots.removeChild(snapshots.children[0]);
 							}
-							//snapshots.appendChild(snapshot);
-							 snapshots.insertBefore(snapshot, snapshots.firstChild);
+							snapshot.className = 'fade-in'; // adicione essa linha
+							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
 							snapshot.onclick = function() {
-									const modal = document.getElementById('modal');
-									const modalImg = document.getElementById('modal-content');
-									modal.style.display = 'block';
-									modalImg.src = this.src;
-								};						
+								const modalImg = document.getElementById('zoomModal-content');
+								const zoomModal = document.getElementById('zoomModal');
+								const closeBtn = document.getElementsByClassName('close')[0];
+								zoomModal.style.display = 'block';
+								modalImg.src = this.src;
+								closeBtn.style.display = 'block';
+							};
 						};
+
+
+
+
 					}	
 					
 					
@@ -232,13 +242,29 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 
-	// Adicione isso ao final do arquivo
-	const modal = document.getElementById('modal');
-	const span = document.getElementsByClassName('close')[0];
+	
+	var zoomModal = document.getElementById('zoomModal');
+	var zoomSpan = document.getElementsByClassName('close')[0];
 
-	span.onclick = function() {
-		modal.style.display = 'none';
+
+
+	zoomSpan.onclick = function() {
+		if(zoomModal != null) {
+			zoomModal.style.display = 'none';
+		}
+
+		if(this != null) {
+			this.style.display = 'none'; // Hide the close button when the zoom modal is closed
+		}
+	};
+
+	// Cria os placeholders.
+	for (let i = 0; i < totalSnapshots; i++) {
+	  const placeholder = document.createElement('img');
+	  placeholder.src = '';  // URL de uma imagem placeholder. Pode ser uma imagem transparente ou um ícone.
+	  snapshots.appendChild(placeholder);
 	}
+
 
 	navigator.mediaDevices.getUserMedia({ video: true })
 		.then(stream => {

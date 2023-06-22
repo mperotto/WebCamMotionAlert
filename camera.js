@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 	// Inicializa o índice de visualização
 	let viewIndex = -1;
+
 	function dragMouseDown(e) {
 		e = e || window.event;
 		// obtenha a posição do cursor do mouse no momento do start:
@@ -245,50 +246,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	let mouseDown = false;
 	let startX, startY;
+	let mouseMoved = false; // adicionar isso ao topo do código
 
 	video.addEventListener('mousedown', (event) => {
-		if (event.button === 0) {
-			mouseDown = true;
-			const rect = video.getBoundingClientRect();
-			startX = event.clientX - rect.left;
-			startY = event.clientY - rect.top;
-			overlay.style.width = '0';
-			overlay.style.height = '0';
-			overlay.style.left = `${startX}px`;
-			overlay.style.top = `${startY}px`;
-			overlay.style.display = 'block';
-		}
+		    if (event.button === 0) {
+				mouseDown = true;
+				const rect = video.getBoundingClientRect();
+				startX = event.clientX - rect.left;
+				startY = event.clientY - rect.top;
+			}
 	});
 
 	video.addEventListener('mousemove', (event) => {
 		if (mouseDown) {
+			mouseMoved = true;
 			const rect = video.getBoundingClientRect();
 			const mouseX = event.clientX - rect.left;
 			const mouseY = event.clientY - rect.top;
 			const width = mouseX - startX;
 			const height = mouseY - startY;
-			overlay.style.width = `${Math.abs(width)}px`;
-			overlay.style.height = `${Math.abs(height)}px`;
-			overlay.style.left = `${Math.min(startX, startX + width)}px`;
-			overlay.style.top = `${Math.min(startY, startY + height)}px`;
+			// Verifique se o mouse foi movido o suficiente antes de atualizar o overlay e a caixa de sensibilidade
+			if (Math.abs(width) > 20 || Math.abs(height) > 20) {
+				mouseMoved = true;
+				overlay.style.width = `${Math.abs(width)}px`;
+				overlay.style.height = `${Math.abs(height)}px`;
+				overlay.style.left = `${Math.min(startX, startX + width)}px`;
+				overlay.style.top = `${Math.min(startY, startY + height)}px`;
+				overlay.style.display = 'block';
+			}
 		}
 	});
 
 	video.addEventListener('mouseup', (event) => {
 		if (mouseDown) {
 			mouseDown = false;
-			const rect = video.getBoundingClientRect();
-			const mouseX = event.clientX - rect.left;
-			const mouseY = event.clientY - rect.top;
-			sensitivityRect = {
-				x: Math.min(startX, mouseX),
-				y: Math.min(startY, mouseY),
-				width: Math.abs(mouseX - startX),
-				height: Math.abs(mouseY - startY),
-			};
-			localStorage.setItem('sensitivityRect', JSON.stringify(sensitivityRect));
+			if(mouseMoved){
+				const rect = video.getBoundingClientRect();
+				const mouseX = event.clientX - rect.left;
+				const mouseY = event.clientY - rect.top;
+				let width = Math.abs(mouseX - startX);
+				let height = Math.abs(mouseY - startY);
+				if (width < 20) {
+					width = 20;
+				}
+				if (height < 20) {
+					height = 20;
+				}
+				sensitivityRect = {
+					x: Math.min(startX, mouseX),
+					y: Math.min(startY, mouseY),
+					width: width,
+					height: height,
+				};
+				overlay.style.width = `${sensitivityRect.width}px`;
+				overlay.style.height = `${sensitivityRect.height}px`;
+				overlay.style.left = `${sensitivityRect.x}px`;
+				overlay.style.top = `${sensitivityRect.y}px`;
+				overlay.style.display = 'block';
+				localStorage.setItem('sensitivityRect', JSON.stringify(sensitivityRect));
+				mouseMoved = false;
+			}
+			else{
+				// Restaurar a caixa de sensibilidade anterior se o arrasto do mouse foi muito pequeno
+				const savedSensitivityRect = localStorage.getItem('sensitivityRect');
+				if (savedSensitivityRect) {
+					sensitivityRect = JSON.parse(savedSensitivityRect);
+					overlay.style.width = `${sensitivityRect.width}px`;
+					overlay.style.height = `${sensitivityRect.height}px`;
+					overlay.style.left = `${sensitivityRect.x}px`;
+					overlay.style.top = `${sensitivityRect.y}px`;
+					overlay.style.display = 'block';
+				}
+			}
 		}
 	});
+
 
 
 	

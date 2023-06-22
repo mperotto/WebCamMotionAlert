@@ -18,7 +18,39 @@ document.addEventListener('DOMContentLoaded', function() {
 	let sensitivityRect = null;
 	let savedPreference = localStorage.getItem('notifications');
 	const totalSnapshots = 15;  // Defina o valor inicial aqui. Isso pode ser substituído por uma configuração do usuário.
+	let thumbnails = []; // Inicializa a array de thumbnails
+	let selectedIndex = -1; // Inicializa o índice selecionado
+	var modal = document.getElementById("zoomModal");
+	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+	// Inicializa o índice de visualização
+	let viewIndex = -1;
+	function dragMouseDown(e) {
+		e = e || window.event;
+		// obtenha a posição do cursor do mouse no momento do start:
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		document.onmouseup = closeDragElement;
+		// chame a função sempre que o cursor se move:
+		document.onmousemove = elementDrag;
+	}
 
+	function elementDrag(e) {
+		e = e || window.event;
+		// calcule a nova posição do cursor:
+		pos1 = pos3 - e.clientX;
+		pos2 = pos4 - e.clientY;
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		// defina a nova posição do elemento:
+		modal.style.top = (modal.offsetTop - pos2) + "px";
+		modal.style.left = (modal.offsetLeft - pos1) + "px";
+	}
+
+	function closeDragElement() {
+		/* pare de mover quando o botão do mouse é solto: */
+		document.onmouseup = null;
+		document.onmousemove = null;
+	}
 
 	function checkForMotion() {
 		const canvas = document.createElement('canvas');
@@ -49,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 
 
-			if (diff > sensitivitySlider.value * 5000) {
+			if (diff > sensitivitySlider.value * 2000) {
 
 				
 				// Desenha uma seta apontando para a primeira detecção de movimento
@@ -90,18 +122,35 @@ document.addEventListener('DOMContentLoaded', function() {
 						const snapshot = new Image();
 						snapshot.src = canvas.toDataURL();
 						snapshot.onload = () => {
+							thumbnails.push(snapshot); // Adicione a thumbnail à array
+							selectedIndex = thumbnails.length - 1;
 							while (snapshots.children.length >= totalSnapshots) {
 								snapshots.removeChild(snapshots.children[0]);
 							}
+							
+							
+							
+							
 							snapshot.className = 'fade-in'; // adicione essa linha
 							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
 							snapshot.onclick = function() {
 								const modalImg = document.getElementById('zoomModal-content');
 								const zoomModal = document.getElementById('zoomModal');
 								const closeBtn = document.getElementsByClassName('close')[0];
-								zoomModal.style.display = 'block';
 								modalImg.src = this.src;
 								closeBtn.style.display = 'block';
+								zoomModal.style.display = 'flex';
+	
+								// Encontre o índice da miniatura que foi clicada
+								viewIndex = thumbnails.indexOf(this);
+								
+								thumbnails.forEach((thumbnail, index) => {
+									if(index === viewIndex) {
+										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
+									} else {
+										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
+									}
+								});								
 							};
 						};
 
@@ -245,17 +294,23 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var zoomModal = document.getElementById('zoomModal');
 	var zoomSpan = document.getElementsByClassName('close')[0];
+	let zoomImg = document.getElementById('zoomModal-img');
+
+	modal.onmousedown = dragMouseDown;
 
 
 
 	zoomSpan.onclick = function() {
-		if(zoomModal != null) {
-			zoomModal.style.display = 'none';
-		}
+		zoomModal.style.display = 'none';
+		
+		isModalOpen = false; // define the modal as closed
+	
+		this.style.display = 'none'; // Hide the close button when the zoom modal is closed
+		// Remover a borda da miniatura selecionada
+		if(selectedIndex !== -1) {
+			thumbnails[selectedIndex].style.border = 'none';
+		}		
 
-		if(this != null) {
-			this.style.display = 'none'; // Hide the close button when the zoom modal is closed
-		}
 	};
 
 	// Cria os placeholders.

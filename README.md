@@ -19,7 +19,7 @@ This project is a simple surveillance system that uses a webcam to detect moveme
 4. Adjust the sensitivity, the alarm interval, and the check interval as needed.
 5. If the system detects movement in the selected area, it will sound an alarm.
 
-![Screenshot of the application](/screenshot1.jpg)
+![Screenshot of the application](/screenshot2.jpg)
 
 [Access the Camera Motion Alert project here](https://mperotto.github.io/WebCamMotionAlert/camera.html)
 

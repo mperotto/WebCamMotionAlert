@@ -32,7 +32,7 @@ This project is a simple surveillance system that uses a webcam to detect moveme
 6. Click on the snapshot thumbnail at the bottom to view a zoomed-in version. Navigate using arrow keys.
 7. Press 'F' to go into full-screen mode and 'Esc' to exit.
 
-![Screenshot of the application](/screenshot2.jpg)
+![Screenshot of the application](images/screenshot2.jpg)
 
 [Access the Camera Motion Alert project here](https://mperotto.github.io/WebCamMotionAlert/camera.html)
 

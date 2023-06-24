@@ -1,0 +1,160 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #007BFF; /* Altere esta linha para a cor desejada, neste caso branco */
+	color: white; /* Altere a cor do texto para contrastar com o fundo */
+    font-family: Arial, sans-serif; /* Escolha a fonte que você achar mais agradável */
+}
+h1 {
+    text-align: center;
+    color: white;
+}
+#videoContainer {
+    position: relative;
+    display: inline-block;
+	border: 2px solid white; /* Altere a cor conforme necessário */
+    border-radius: 10px; /* Adicione cantos arredondados */
+    padding: 10px; /* Adicione algum espaço interno */	
+}
+
+video {
+    display: block;
+    width: 640px;
+    height: 480px;
+    background: #222;
+}
+
+#overlay {
+    position: absolute;
+    border: 3px dashed red;
+    pointer-events: none;
+    z-index: 1;
+    contain: content-box;
+}
+
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+     gap: 10px; /* Adicione algum espaço entre os elementos */
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.slider {
+    -webkit-appearance: none; /* Remover a aparência padrão */
+    width: 100%; /* Tornar o controle deslizante tão largo quanto o contêiner */
+    height: 10px; /* Ajuste a altura */
+    border-radius: 5px; /* Adicione cantos arredondados */
+    background: #D3D3D3; /* Cor de fundo */
+    outline: none; /* Remover borda de foco */
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remover a aparência padrão */
+    appearance: none;
+    width: 20px; /* Largura do manipulador */
+    height: 20px; /* Altura do manipulador */
+    border-radius: 50%;  /* Faz o manipulador circular */
+    background: #4CAF50; /* Cor de fundo do manipulador */
+    cursor: pointer; /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
+}
+
+.slider::-moz-range-thumb {
+    width: 20px; /* Largura do manipulador */
+    height: 20px; /* Altura do manipulador */
+    border-radius: 50%; /* Faz o manipulador circular */
+    background: #4CAF50; /* Cor de fundo do manipulador */
+    cursor: pointer; /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
+}
+#snapshots {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    border: 1px solid black;  /* Add border */
+    flex-wrap: wrap;  /* Wrap elements to new lines */
+}
+
+#snapshots img {
+    width: 100px;
+    box-sizing: border-box;  /* Include the padding and border in an element's total width and height */
+    padding: 5px;  /* Space around the image */
+    border: 1px solid black;  /* Border around the image */
+}
+
+
+#zoomModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 50%;   /* Centraliza horizontalmente */
+    top: 50%;    /* Centraliza verticalmente */
+    transform: translate(-50%, -50%); /* Desloca o modal para trás pela metade de sua altura e largura, efetivamente centralizando-o */
+    width: 50%; /* width of the viewport */
+    height: 50%; /* height of the viewport */
+    overflow: auto;
+    background-color: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+
+}
+
+#zoomModal-content {
+    position: relative;
+    margin: auto;
+    display: block;
+    max-width: 98%;
+    max-height: 100%;
+}
+
+#zoomModal .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    z-index: 2;
+}
+
+#zoomModal .close:hover,
+#zoomModal .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+.bell-icon {
+    width: 16px;
+    height: 16px;
+    background-image: url('/images/bell-solid.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.bell-icon-off {
+	width: 16px;
+    height: 16px;
+    background-image: url('/images/bell-slash-solid.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+.fade-in {
+    animation: fadeIn 1s;
+}

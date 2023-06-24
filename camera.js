@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function checkForMotion() {
 		const canvas = document.createElement('canvas');
-		const context = canvas.getContext('2d');
+		const context = canvas.getContext('2d', { willReadFrequently: true });
 		canvas.width = video.videoWidth;
 		canvas.height = video.videoHeight;
 		

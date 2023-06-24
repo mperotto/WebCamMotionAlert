@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const snapshots = document.getElementById('snapshots');
 	const overlay = document.getElementById('overlay');
 	const notificationsCheckbox = document.getElementById('notificationsCheckbox');
-
+	const body = document.body;
 	let previousFrame = null;
 	let alarmTimeout = null;
 	let nextAlarmTime = 0;
@@ -153,6 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
 									}
 								});								
 							};
+							
+			
 						};
 
 
@@ -321,9 +323,46 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
+	document.addEventListener('keydown', function(event) {
+		if (event.key === 'f' || event.key === 'F') { // Pressionar 'F' para entrar no modo de tela cheia
+			if (video.requestFullscreen) {
+				video.requestFullscreen();
+			} else if (video.mozRequestFullScreen) { // Firefox
+				video.mozRequestFullScreen();
+			} else if (video.webkitRequestFullscreen) { // Chrome, Safari e Opera
+				video.webkitRequestFullscreen();
+			} else if (video.msRequestFullscreen) { // IE/Edge
+				video.msRequestFullscreen();
+			}
+		} else if (event.key === 'Escape' || event.key === 'Esc') { // Pressionar 'Esc' para sair do modo de tela cheia
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) { // Firefox
+				document.mozCancelFullScreen();
+			} else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+				document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) { // IE/Edge
+				document.msExitFullscreen();
+			}
+		}
+	});
 
 
-	
+	document.addEventListener('fullscreenchange', (event) => {
+		if (document.fullscreenElement) {
+			// Se entramos em tela cheia, defina o vídeo para ocupar todo o espaço
+			video.style.position = 'fixed';
+			video.style.top = '0';
+			video.style.left = '0';
+			video.style.width = '100%';
+			video.style.height = '100%';
+		} else {
+			// Se sairmos da tela cheia, redefina o estilo do vídeo
+			video.style.position = 'static';
+			video.style.width = '';
+			video.style.height = '';
+		}
+	});	
 	var zoomModal = document.getElementById('zoomModal');
 	var zoomSpan = document.getElementsByClassName('close')[0];
 	let zoomImg = document.getElementById('zoomModal-img');
@@ -371,4 +410,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			};
 		})
 		.catch(console.error);
+		
+		
+		
+		
+		
+		
 });

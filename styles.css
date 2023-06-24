@@ -33,7 +33,9 @@ video {
     border: 3px dashed red;
     pointer-events: none;
     z-index: 1;
+    contain: content-box;
 }
+
 
 #controls {
     display: flex;

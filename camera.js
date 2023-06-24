@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const sensitivitySlider = document.getElementById('sensitivity');
 	const alarmIntervalSlider = document.getElementById('alarmInterval');
 	const intervalSlider  = document.getElementById('interval'); 
-
+	const videoContainer = document.getElementById('videoContainer');
 	const sensitivityValue = document.getElementById('sensitivityValue');
 	const intervalValue = document.getElementById('intervalValue');
 	const alarmIntervalValue = document.getElementById('alarmIntervalValue');
@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	let nextAlarmTime = 0;
 	let sensitivityRect = null;
 	let savedPreference = localStorage.getItem('notifications');
+	
 	const totalSnapshots = 15;  // Defina o valor inicial aqui. Isso pode ser substituído por uma configuração do usuário.
 	let thumbnails = []; // Inicializa a array de thumbnails
 	let selectedIndex = -1; // Inicializa o índice selecionado
-	var modal = document.getElementById("zoomModal");
+	let zoomModal = document.getElementById("zoomModal");
 	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 	// Inicializa o índice de visualização
 	let viewIndex = -1;
@@ -43,8 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		pos3 = e.clientX;
 		pos4 = e.clientY;
 		// defina a nova posição do elemento:
-		modal.style.top = (modal.offsetTop - pos2) + "px";
-		modal.style.left = (modal.offsetLeft - pos1) + "px";
+		zoomModal.style.top = (zoomModal.offsetTop - pos2) + "px";
+		zoomModal.style.left = (zoomModal.offsetLeft - pos1) + "px";
 	}
 
 	function closeDragElement() {
@@ -58,8 +59,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		const context = canvas.getContext('2d');
 		canvas.width = video.videoWidth;
 		canvas.height = video.videoHeight;
+		
+		
 		context.drawImage(video, 0, 0, canvas.width, canvas.height);
-		const currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+		let currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
 
 		let movementDetectedAt = null;
 		
@@ -75,98 +78,101 @@ document.addEventListener('DOMContentLoaded', function() {
 					diff += pixelDiff;
 
 					// Se movimento foi detectado e ainda não tínhamos a posição inicial
-					if (pixelDiff > sensitivitySlider.value && !movementDetectedAt) {
+					if (diff > sensitivitySlider.value * 2000 && !movementDetectedAt) {
 						movementDetectedAt = { x, y };
+						break;
 					}
 				}
 			}
 
-
-			if (diff > sensitivitySlider.value * 2000) {
-
-				
-				// Desenha uma seta apontando para a primeira detecção de movimento
-				if (movementDetectedAt) {
-
-					if (Date.now() > nextAlarmTime) {
-
-						
-						// Adicione essa verificação para notificações aqui
-						if (notificationsCheckbox.checked) {
-							alarm.play();
-						}						
-											
-						nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
-							 // início da linha da seta
-						context.beginPath();
-						context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
-						// desenhar linha central da seta para a direita
-						context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
-						// desenhar linha superior da ponta da seta
-						context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
-						// mover para a base da ponta da seta
-						context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
-						// concluir a ponta da seta
-						context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
-						context.strokeStyle = 'red';
-						context.lineWidth = 3;
-						context.stroke();
-						// Criar um timestamp e desenhá-lo na imagem
-						const timestamp = new Date().toLocaleString();
-						context.font = '20px Arial';
-						context.fillStyle = 'red';
-						context.fillText(timestamp, 10, 30);
-						
-						
-						
-						
-						const snapshot = new Image();
-						snapshot.src = canvas.toDataURL();
-						snapshot.onload = () => {
-							thumbnails.push(snapshot); // Adicione a thumbnail à array
-							selectedIndex = thumbnails.length - 1;
-							while (snapshots.children.length >= totalSnapshots) {
-								snapshots.removeChild(snapshots.children[0]);
-							}
-							
-							
-							
-							
-							snapshot.className = 'fade-in'; // adicione essa linha
-							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
-							snapshot.onclick = function() {
-								const modalImg = document.getElementById('zoomModal-content');
-								const zoomModal = document.getElementById('zoomModal');
-								const closeBtn = document.getElementsByClassName('close')[0];
-								modalImg.src = this.src;
-								closeBtn.style.display = 'block';
-								zoomModal.style.display = 'flex';
-	
-								// Encontre o índice da miniatura que foi clicada
-								viewIndex = thumbnails.indexOf(this);
-								
-								thumbnails.forEach((thumbnail, index) => {
-									if(index === viewIndex) {
-										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
-									} else {
-										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
-									}
-								});								
-							};
-							
 			
+				// Desenha uma seta apontando para a primeira detecção de movimento
+			if (movementDetectedAt) {
+
+				if (Date.now() > nextAlarmTime) {
+
+					// Capturar um novo quadro de vídeo
+					context.drawImage(video, 0, 0, canvas.width, canvas.height);
+					currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+					
+					// Adicione essa verificação para notificações aqui
+					if (notificationsCheckbox.checked) {
+						alarm.play();
+					}						
+						
+					
+
+						
+					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
+						 // início da linha da seta
+					context.beginPath();
+					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
+					// desenhar linha central da seta para a direita
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
+					// desenhar linha superior da ponta da seta
+					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
+					// mover para a base da ponta da seta
+					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
+					// concluir a ponta da seta
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
+					context.strokeStyle = 'red';
+					context.lineWidth = 3;
+					context.stroke();
+					// Criar um timestamp e desenhá-lo na imagem
+					const timestamp = new Date().toLocaleString();
+					context.font = '20px Arial';
+					context.fillStyle = 'red';
+					context.fillText(timestamp, 10, 30);
+					
+					
+					
+					
+					const snapshot = new Image();
+					snapshot.src = canvas.toDataURL();
+					snapshot.onload = () => {
+						thumbnails.push(snapshot); // Adicione a thumbnail à array
+						selectedIndex = thumbnails.length - 1;
+						while (snapshots.children.length >= totalSnapshots) {
+							snapshots.removeChild(snapshots.children[0]);
+						}
+						
+						
+						
+						
+						snapshot.className = 'fade-in'; // adicione essa linha
+						snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
+						snapshot.onclick = function() {
+							const modalImg = document.getElementById('zoomModal-content');
+							const closeBtn = document.getElementsByClassName('close')[0];
+							modalImg.src = this.src;
+							closeBtn.style.display = 'block';
+							zoomModal.style.display = 'flex';
+
+							// Encontre o índice da miniatura que foi clicada
+							viewIndex = thumbnails.indexOf(this);
+							
+							thumbnails.forEach((thumbnail, index) => {
+								if(index === viewIndex) {
+									thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
+								} else {
+									thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
+								}
+							});								
 						};
+						
+		
+					};
 
 
 
 
-					}	
-					
-					
-				}
-
-					
+				}	
+				movementDetectedAt = null;
+				
 			}
+
+					
+			
 		}
 
 
@@ -251,6 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	let mouseMoved = false; // adicionar isso ao topo do código
 
 	video.addEventListener('mousedown', (event) => {
+		    if (document.fullscreenElement) {
+			return;  // Skip this event if in fullscreen mode
+		}
+		
 		    if (event.button === 0) {
 				mouseDown = true;
 				const rect = video.getBoundingClientRect();
@@ -324,25 +334,15 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	document.addEventListener('keydown', function(event) {
-		if (event.key === 'f' || event.key === 'F') { // Pressionar 'F' para entrar no modo de tela cheia
-			if (video.requestFullscreen) {
-				video.requestFullscreen();
-			} else if (video.mozRequestFullScreen) { // Firefox
-				video.mozRequestFullScreen();
-			} else if (video.webkitRequestFullscreen) { // Chrome, Safari e Opera
-				video.webkitRequestFullscreen();
-			} else if (video.msRequestFullscreen) { // IE/Edge
-				video.msRequestFullscreen();
+		if (event.key === 'f' || event.key === 'F') { // Press 'F' to toggle fullscreen mode
+			if (document.fullscreenElement) {
+				exitFullscreen();
+			} else {
+				enterFullscreen(videoContainer);
 			}
-		} else if (event.key === 'Escape' || event.key === 'Esc') { // Pressionar 'Esc' para sair do modo de tela cheia
-			if (document.exitFullscreen) {
-				document.exitFullscreen();
-			} else if (document.mozCancelFullScreen) { // Firefox
-				document.mozCancelFullScreen();
-			} else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-				document.webkitExitFullscreen();
-			} else if (document.msExitFullscreen) { // IE/Edge
-				document.msExitFullscreen();
+		} else if (event.key === 'Escape' || event.key === 'Esc') { // Press 'Esc' to exit fullscreen mode
+			if (document.fullscreenElement) {
+				exitFullscreen();
 			}
 		}
 	});
@@ -356,18 +356,56 @@ document.addEventListener('DOMContentLoaded', function() {
 			video.style.left = '0';
 			video.style.width = '100%';
 			video.style.height = '100%';
+			
+			// Ajuste a posição e o tamanho do retângulo.
+			overlay.style.width = `${sensitivityRect.width / video.videoWidth * 100}%`;
+			overlay.style.height = `${sensitivityRect.height / video.videoHeight * 100}%`;
+			overlay.style.left = `${sensitivityRect.x / video.videoWidth * 100}%`;
+			overlay.style.top = `${sensitivityRect.y / video.videoHeight * 100}%`;
 		} else {
 			// Se sairmos da tela cheia, redefina o estilo do vídeo
 			video.style.position = 'static';
 			video.style.width = '';
 			video.style.height = '';
+			
+			// Redefina a posição e o tamanho do retângulo.
+			overlay.style.width = `${sensitivityRect.width}px`;
+			overlay.style.height = `${sensitivityRect.height}px`;
+			overlay.style.left = `${sensitivityRect.x}px`;
+			overlay.style.top = `${sensitivityRect.y}px`;
 		}
-	});	
-	var zoomModal = document.getElementById('zoomModal');
+	});
+
+	function enterFullscreen(element) {
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.mozRequestFullScreen) { // Firefox
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
+			element.webkitRequestFullscreen();
+		} else if (element.msRequestFullscreen) { // IE/Edge
+			element.msRequestFullscreen();
+		}
+	}
+
+	function exitFullscreen() {
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.mozCancelFullScreen) { // Firefox
+			document.mozCancelFullScreen();
+		} else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+			document.webkitExitFullscreen();
+		} else if (document.msExitFullscreen) { // IE/Edge
+			document.msExitFullscreen();
+		}
+	}
+
+
+
 	var zoomSpan = document.getElementsByClassName('close')[0];
 	let zoomImg = document.getElementById('zoomModal-img');
 
-	modal.onmousedown = dragMouseDown;
+	zoomModal.onmousedown = dragMouseDown;
 
 
 
@@ -375,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		zoomModal.style.display = 'none';
 		
 		isModalOpen = false; // define the modal as closed
-	
+
 		this.style.display = 'none'; // Hide the close button when the zoom modal is closed
 		// Remover a borda da miniatura selecionada
 		if(selectedIndex !== -1) {

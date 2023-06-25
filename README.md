@@ -2,6 +2,40 @@
 
 This project is a simple surveillance system that uses a webcam to detect movements. It has added a few new features to improve user experience and functionality.
 
+## Prerequisites
+
+- Python
+- Pip
+
+
+
+First, you need to install Python in your system. After installing Python, you can create a Python virtual environment and install Flask in it. Here are the steps:
+
+
+1. Run the `install.bat` file in your terminal to create the Python virtual environment and install Flask. The `install.bat` file should contain the following commands:
+
+    ```bat
+    @echo off
+    IF NOT EXIST myenv (
+      python -m venv myenv
+    )
+    call myenv\Scripts\activate
+    pip install flask
+    pip install flask_paginate
+    ```
+
+2. Run the `run_server.bat` file to start the Flask server. The `run_server.bat` file should contain the following commands:
+
+    ```bat
+    @echo off
+    call myenv\Scripts\activate
+    start /b python app.py
+    timeout /t 5
+    start http://localhost:8000/
+    ```
+
+
+
 ## Features
 
 - Detects movement within a selected area of the webcam video.
@@ -24,17 +58,21 @@ This project is a simple surveillance system that uses a webcam to detect moveme
 
 ## Usage
 
-1. Open the camera.html file in your browser. The other files should be in the same directory.
+
+## Usage
+
+1. After starting the Flask server, open the camera.html file in your browser. The other files should be in the same directory.
 2. Allow the browser to access your webcam.
 3. Select an area in the webcam video to monitor for motion.
 4. Adjust the sensitivity, the alarm interval, and the check interval as needed.
 5. If the system detects movement in the selected area, it will sound an alarm and create a snapshot.
-6. Click on the snapshot thumbnail at the bottom to view a zoomed-in version. Navigate using arrow keys.
+6. Click on the snapshot thumbnail at the bottom to view a zoomed-in version. 
 7. Press 'F' to go into full-screen mode and 'Esc' to exit.
+8. You can view the list of snapshots at `http://localhost:8000/snapshots`.
+9. Click on the snapshot thumbnail at the bottom to view a zoomed-in version. Navigate using arrow keys.
+
 
 ![Screenshot of the application](images/screenshot2.jpg)
-
-[Access the Camera Motion Alert project here](https://mperotto.github.io/WebCamMotionAlert/camera.html)
 
 ## Settings
 
@@ -45,7 +83,7 @@ This project is a simple surveillance system that uses a webcam to detect moveme
 
 ## Development
 
-This project is developed with pure HTML, CSS, and JavaScript. It doesn't depend on any libraries or frameworks.
+This project is developed with HTML, CSS, JavaScript, Python, and Flask.
 
 ## Contributions
 

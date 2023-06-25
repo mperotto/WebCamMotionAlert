@@ -1,0 +1,22 @@
+Listagem de caminhos de pasta
+O n�mero de s�rie do volume � D263-1A27
+C:.
+����.history
+�   ����scripts
+�   ����static
+�   �   ����scripts
+�   �   ����styles
+�   ����styles
+�   ����template
+����.vscode
+����myenv
+suprimido...
+�   �           ����__pycache__
+�   ����Scripts
+����snapshots
+����static
+�   ����images
+�   ����scripts
+�   ����sounds
+�   ����styles
+����templates

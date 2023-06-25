@@ -54,6 +54,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.onmousemove = null;
 	}
 
+
+	async function uploadImage(blob) {
+		let formData = new FormData();
+
+		// Cria uma data e formata em uma string de timestamp
+		let timestamp = new Date().toISOString().replace(/:/g, '-');
+
+		formData.append("file", blob, "snapshot-" + timestamp + ".png");
+
+		fetch('http://localhost:8000/upload', {
+			method: "POST",
+			body: formData
+		}).then(response => {
+			console.log('Success:', response);
+		}).catch(error => {
+			console.error('Error:', error);
+		});
+	}
+
+
+
 	function checkForMotion() {
 		const canvas = document.createElement('canvas');
 		const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -124,51 +145,55 @@ document.addEventListener('DOMContentLoaded', function() {
 					context.fillStyle = 'red';
 					context.fillText(timestamp, 10, 30);
 					
-					
-					
-					
-					const snapshot = new Image();
-					snapshot.src = canvas.toDataURL();
-					snapshot.onload = () => {
-						thumbnails.push(snapshot); // Adicione a thumbnail à array
-						selectedIndex = thumbnails.length - 1;
-						while (snapshots.children.length >= totalSnapshots) {
-							snapshots.removeChild(snapshots.children[0]);
-						}
-						
-						
-						
-						
-						snapshot.className = 'fade-in'; // adicione essa linha
-						snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
-						snapshot.onclick = function() {
-							const modalImg = document.getElementById('zoomModal-content');
-							const closeBtn = document.getElementsByClassName('close')[0];
-							modalImg.src = this.src;
-							closeBtn.style.display = 'block';
-							zoomModal.style.display = 'flex';
+					canvas.toBlob(function (blob) {
+						const objectURL = URL.createObjectURL(blob);
 
-							// Encontre o índice da miniatura que foi clicada
-							viewIndex = thumbnails.indexOf(this);
-							
-							thumbnails.forEach((thumbnail, index) => {
-								if(index === viewIndex) {
-									thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
-								} else {
-									thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
-								}
-							});								
+						const snapshot = new Image();
+						snapshot.src = objectURL;
+						snapshot.onload = () => {
+							thumbnails.push(snapshot); // Adicione a thumbnail à array
+							selectedIndex = thumbnails.length - 1;
+
+							while (snapshots.children.length >= totalSnapshots) {
+								snapshots.removeChild(snapshots.children[0]);
+							}
+
+							snapshot.className = 'fade-in'; // adicione essa linha
+							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
+
+							// Inicie o upload da imagem
+							uploadImage(blob).then(() => {
+								console.log('Upload complete');
+							}).catch(err => {
+								console.error('Upload failed:', err);
+							});
+
+							snapshot.onclick = function () {
+								const modalImg = document.getElementById('zoomModal-content');
+								const closeBtn = document.getElementsByClassName('close')[0];
+								modalImg.src = this.src;
+								closeBtn.style.display = 'block';
+								zoomModal.style.display = 'flex';
+
+								// Encontre o índice da miniatura que foi clicada
+								viewIndex = thumbnails.indexOf(this);
+
+								thumbnails.forEach((thumbnail, index) => {
+									if (index === viewIndex) {
+										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
+									} else {
+										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
+									}
+								});
+							};
+
+							// Libere o URL do objeto após o uso
+							URL.revokeObjectURL(objectURL);
 						};
-						
-		
-					};
+					}, 'image/png');
 
-
-
-
-				}	
-				movementDetectedAt = null;
-				
+					movementDetectedAt = null;
+				}
 			}
 
 					

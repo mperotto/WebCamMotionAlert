@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Snapshots</title>
+    <link rel="stylesheet" type="text/css" href="static/styles/snapshot.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="static/scripts/snapshots.js" defer></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">Snapshot Gallery</h1>
+        <div id="myModal" class="modal">
+            <span class="close">&times;</span>
+            <img class="modal-content" id="img01">
+            <div id="caption"></div>
+        </div>
+        <div class="row">
+            {% for snapshot in snapshots %}
+            <div class="col-4">
+                <img class="thumbnail img-modal" src="{{ url_for('send_file', filename=snapshot) }}" alt="{{ snapshot }}">
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('show_snapshots', page=1) }}">First</a>
+            </li>
+            {% if has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('show_snapshots', page=prev_num) }}">Prev</a>
+            </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Page {{ page }} of {{ (total + per_page - 1) // per_page }}
+                </span>
+            </li>
+            {% if has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('show_snapshots', page=next_num) }}">Next</a>
+            </li>
+            {% endif %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('show_snapshots', page=(total + per_page - 1) // per_page) }}">Last</a>
+            </li>
+        </ul>
+
+
+    </div>
+</body>
+
+</html>

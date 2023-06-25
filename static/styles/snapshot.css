@@ -1,0 +1,64 @@
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 90px;
+    left: 0;
+    top: 0;
+    width: 90%;
+    height: 90%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+    object-fit: contain;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #000;
+    /* cor do texto "x" */
+    background-color: #fff;
+    /* cor de fundo do botão de fechamento */
+    font-size: 100px;
+    font-weight: bold;
+    transition: 0.3s;
+    text-shadow: 2px 2px 4px #000000;
+    border-radius: 50%;
+    /* para tornar o fundo do botão circular */
+    padding: 10px;
+    /* para dar um pouco de espaço ao redor do "x" */
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+.thumbnail {
+    width: 300px;
+    /* ou qualquer outro valor que você desejar */
+    height: auto;
+    /* para manter a proporção da imagem */
+    border: 3px solid white;
+    /* define a borda como branca com 3px de espessura */
+    margin: 10px;
+    /* define a margem em torno da imagem como 10px */
+    box-sizing: border-box;
+    /* garante que a largura da imagem inclua a borda e o padding */
+}
+
+.img-modal.selected {
+    border: 3px solid red;
+}

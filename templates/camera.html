@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Webcam Access</title>
+        <link rel="stylesheet" type="text/css" href="static/styles/styles.css">
+        <link rel="shortcut icon" href="/favicon.ico?v=2" type="images/x-icon">
+        <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <script src="static/scripts/camera.js" defer></script>
+
+    </head>
+    <body>
+		<h1>WebCam Motion Alert</h1>
+
+        <div id="videoContainer"  title="Click and drag to select the area to monitor for motion. Press F for fullscreen video and ESC-to quit">
+            <video autoplay="true" id="webcam" ></video>
+            <div id="overlay"></div>
+        </div>
+        <div id="controls">
+            <div class="slider-container" title="Sensitivity slider adjusts the threshold for detecting movement. Higher values require larger changes in pixel colors (RGB values) between video frames to register as movement">
+                <label for="sensitivity">Sensitivity: <span id="sensitivityValue">500</span></label>
+                <input type="range" min="1" max="1000" value="500" class="slider" id="sensitivity" >
+            </div>
+            <div class="slider-container" title="Set the time that should pass between alarms." >
+                <label for="alarmInterval">Alarm Interval (s): <span id="alarmIntervalValue">10</span></label>
+                <input type="range" min="1" max="30" value="10" class="slider" id="alarmInterval"  >
+            </div>
+            <div class="slider-container" title="Set the frequency of motion checks.">
+                <label for="interval">Interval (ms): <span id="intervalValue">200</span></label>
+                <input type="range" min="20" max="1000" value="200" class="slider" id="interval" >
+            </div>
+			<label for="notificationsCheckbox" title="Check this box to enable sound notifications when motion is detected.">
+				<svg id="bellIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="16" height="16">
+				</svg>
+				<span>Sound Alarm</span>
+				<input type="checkbox" id="notificationsCheckbox" >
+			</label>
+			
+					
+			
+		
+        </div>
+        <div id="snapshots" title="Snapshots of detected motion will appear here. Click on a snapshot for a larger view."></div>
+        <audio id="alarm" src="static/sounds/mixkit-digital-quick-tone-2866.wav" preload="auto"></audio>
+		<div id="zoomModal">
+			<span class="close">&times;</span>
+			<img id="zoomModal-content" title="This is a larger view of a snapshot. Click x to close. Drag zoom window to move" >
+			
+		</div>
+
+	
+    </body>
+
+</html>

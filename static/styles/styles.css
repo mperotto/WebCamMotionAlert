@@ -137,7 +137,7 @@ video {
 .bell-icon {
     width: 16px;
     height: 16px;
-    background-image: url('/images/bell-solid.svg');
+    background-image: url('/static//images/bell-solid.svg');
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -145,7 +145,7 @@ video {
 .bell-icon-off {
 	width: 16px;
     height: 16px;
-    background-image: url('/images/bell-slash-solid.svg');
+    background-image: url('/static/images/bell-slash-solid.svg');
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -157,4 +157,8 @@ video {
 
 .fade-in {
     animation: fadeIn 1s;
+}
+
+.img-thumbnail {
+    margin-bottom: 30px;
 }

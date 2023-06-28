@@ -98,7 +98,7 @@ First, you need to install Python in your system. After installing Python, you c
 9. Click on the snapshot thumbnail at the bottom to view a zoomed-in version. Navigate using arrow keys.
 
 
-![Screenshot of the application](images/screenshot2.jpg)
+![Screenshot of the application](static/images/screenshot3.jpg)
 
 ## Settings
 

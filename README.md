@@ -15,13 +15,40 @@ First, you need to install Python in your system. After installing Python, you c
 1. Download the project to a folder on yout environment and run the `install.bat` file in your terminal to create the Python virtual environment and install Flask. The `install.bat` file should contain the following commands:
 
     ```bat
+      
     @echo off
     IF NOT EXIST myenv (
-      python -m venv myenv
+    python -m venv myenv
     )
     call myenv\Scripts\activate
     pip install flask
     pip install flask_paginate
+    pip install PyJWT
+    pip install bcrypt
+
+    :: Prompt for admin login and password
+    echo Enter admin login:
+    set /p ADMIN_LOGIN=
+    echo Enter admin password:
+    set /p ADMIN_PASSWORD=
+
+    :: Calculate the password hash using bcrypt
+    for /f %%i in ('python -c "import bcrypt; print(bcrypt.hashpw(b'%ADMIN_PASSWORD%', bcrypt.gensalt()).decode())"') do set "ADMIN_PASSWORD_HASH=%%i"
+
+    :: Create the clients.json file
+    echo {^"%ADMIN_LOGIN%^": {^"secret^": ^"%ADMIN_PASSWORD_HASH%^", ^"scopes^": [^"admin^", ^"view_snapshots^", ^"upload_snapshots^"]}} > static/clients.json
+
+    echo Generating a secure random secret key...
+    FOR /F "tokens=* USEBACKQ" %%F IN (python -c "import secrets; print(secrets.token_hex(32))") DO (
+    SET SECRET_KEY=%%F
+    )
+    echo Secret key generated: %SECRET_KEY%
+
+    echo Creating the secret_key file...
+    echo %SECRET_KEY% > static/secret_key
+
+    :: Inform the user that the installation has been completed
+    echo Installation completed!
     ```
 
 2. Run the `run_server.bat` file to start the Flask server. The `run_server.bat` file should contain the following commands:
@@ -36,6 +63,7 @@ First, you need to install Python in your system. After installing Python, you c
 
 ## Features
 
+- Secure login and password with JWT token
 - Detects movement within a selected area of the webcam video.
 - Sounds an alarm if motion is detected.
 - Allows adjustment of the motion detection sensitivity.
@@ -86,3 +114,5 @@ This project is developed with HTML, CSS, JavaScript, Python, and Flask.
 ## Contributions
 
 Contributions are welcome! Please fork this repository and create a Pull Request if you have any improvements to suggest.
+
+

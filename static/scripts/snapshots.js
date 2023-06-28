@@ -13,6 +13,10 @@ window.onload = function () {
         }
     }
 
+    document.getElementById('logout-button').addEventListener('click', function () {
+        window.location.href = '/logout';
+    });
+
     function openModal(img) {
         modal.style.display = "block";
         modalImg.src = img.src;

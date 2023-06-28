@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	let alarmTimeout = null;
 	let nextAlarmTime = 0;
 	let sensitivityRect = null;
+	let sensitivityRectRelativeToVideo = null;
 	let savedPreference = localStorage.getItem('notifications');
 	
 	const totalSnapshots = 15;  // Defina o valor inicial aqui. Isso pode ser substituído por uma configuração do usuário.
@@ -57,21 +58,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	async function uploadImage(blob) {
 		let formData = new FormData();
-
-		// Cria uma data e formata em uma string de timestamp
 		let timestamp = new Date().toISOString().replace(/:/g, '-');
 
 		formData.append("file", blob, "snapshot-" + timestamp + ".png");
 
-		fetch('http://localhost:8000/upload', {
+		const response = await fetch('/upload', {
 			method: "POST",
 			body: formData
-		}).then(response => {
-			console.log('Success:', response);
-		}).catch(error => {
-			console.error('Error:', error);
 		});
+
+		if (response.status === 401) {
+			const responseData = await response.json();
+			if (responseData.msg === 'Token expired') {
+				// O token expirou, redirecione para a página de login
+				window.location.href = '/login.html';
+			} else {
+				console.error('Error:', responseData.msg);
+			}
+		} else if (!response.ok) {
+			const responseData = await response.json();
+			console.error('Error:', responseData);
+		} else {
+			console.log('Success:', response);
+		}
 	}
+
+
 
 
 
@@ -87,10 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let movementDetectedAt = null;
 		
-		if (previousFrame && sensitivityRect) {
+		if (previousFrame && sensitivityRectRelativeToVideo) {
 			let diff = 0;
-			for (let y = sensitivityRect.y; y < sensitivityRect.y + sensitivityRect.height; y++) {
-				for (let x = sensitivityRect.x; x < sensitivityRect.x + sensitivityRect.width; x++) {
+			for (let y = sensitivityRectRelativeToVideo.y; y < sensitivityRectRelativeToVideo.y + sensitivityRectRelativeToVideo.height; y++) {
+				for (let x = sensitivityRectRelativeToVideo.x; x < sensitivityRectRelativeToVideo.x + sensitivityRectRelativeToVideo.width; x++) {
 					const i = (y * canvas.width + x) * 4;
 					const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
 					const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
@@ -188,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							};
 
 							// Libere o URL do objeto após o uso
-							URL.revokeObjectURL(objectURL);
+							//URL.revokeObjectURL(objectURL);
 						};
 					}, 'image/png');
 
@@ -281,25 +293,49 @@ document.addEventListener('DOMContentLoaded', function() {
 	let startX, startY;
 	let mouseMoved = false; // adicionar isso ao topo do código
 
+
+
+
+
 	video.addEventListener('mousedown', (event) => {
-		    if (document.fullscreenElement) {
+		if (document.fullscreenElement) {
 			return;  // Skip this event if in fullscreen mode
 		}
-		
-		    if (event.button === 0) {
-				mouseDown = true;
-				const rect = video.getBoundingClientRect();
-				startX = event.clientX - rect.left;
-				startY = event.clientY - rect.top;
-			}
+
+		if (event.button === 0) {
+			mouseDown = true;
+
+			var video = document.getElementById('webcam');
+			var videoContainer = document.getElementById('videoContainer');
+
+			var videoRect = video.getBoundingClientRect();
+			var containerRect = videoContainer.getBoundingClientRect();
+
+			var offsetX = videoRect.left - containerRect.left;
+			var offsetY = videoRect.top - containerRect.top;
+
+			startX = (event.clientX - videoRect.left) + offsetX;
+			startY = (event.clientY - videoRect.top) + offsetY;
+		}
 	});
 
 	video.addEventListener('mousemove', (event) => {
 		if (mouseDown) {
 			mouseMoved = true;
-			const rect = video.getBoundingClientRect();
-			const mouseX = event.clientX - rect.left;
-			const mouseY = event.clientY - rect.top;
+
+
+			var video = document.getElementById('webcam');
+			var videoContainer = document.getElementById('videoContainer');
+
+			var videoRect = video.getBoundingClientRect();
+			var containerRect = videoContainer.getBoundingClientRect();
+
+			var offsetX = videoRect.left - containerRect.left;
+			var offsetY = videoRect.top - containerRect.top;
+
+			mouseX = (event.clientX - videoRect.left) + offsetX;
+			mouseY = (event.clientY - videoRect.top) + offsetY;			
+
 			const width = mouseX - startX;
 			const height = mouseY - startY;
 			// Verifique se o mouse foi movido o suficiente antes de atualizar o overlay e a caixa de sensibilidade
@@ -318,9 +354,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (mouseDown) {
 			mouseDown = false;
 			if(mouseMoved){
-				const rect = video.getBoundingClientRect();
-				const mouseX = event.clientX - rect.left;
-				const mouseY = event.clientY - rect.top;
+				var video = document.getElementById('webcam');
+				var videoContainer = document.getElementById('videoContainer');
+
+				var videoRect = video.getBoundingClientRect();
+				var containerRect = videoContainer.getBoundingClientRect();
+
+				var offsetX = videoRect.left - containerRect.left;
+				var offsetY = videoRect.top - containerRect.top;
+
+				mouseX = (event.clientX - videoRect.left) + offsetX;
+				mouseY = (event.clientY - videoRect.top) + offsetY;		
+
 				let width = Math.abs(mouseX - startX);
 				let height = Math.abs(mouseY - startY);
 				if (width < 20) {
@@ -329,31 +374,47 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (height < 20) {
 					height = 20;
 				}
+				// Criação do retângulo de sensibilidade em relação à página
 				sensitivityRect = {
 					x: Math.min(startX, mouseX),
 					y: Math.min(startY, mouseY),
 					width: width,
 					height: height,
 				};
-				overlay.style.width = `${sensitivityRect.width}px`;
-				overlay.style.height = `${sensitivityRect.height}px`;
-				overlay.style.left = `${sensitivityRect.x}px`;
-				overlay.style.top = `${sensitivityRect.y}px`;
-				overlay.style.display = 'block';
-				localStorage.setItem('sensitivityRect', JSON.stringify(sensitivityRect));
-				mouseMoved = false;
+
+				// Criação do retângulo de sensibilidade em relação ao vídeo
+				sensitivityRectRelativeToVideo = {
+					x: Math.min(startX, mouseX) - offsetX,
+					y: Math.min(startY, mouseY) - offsetY,
+					width: width,
+					height: height,
+				};
+
+				// Armazenar ambos os retângulos em um único objeto
+				var sensitivityData = {
+					rect: sensitivityRect,
+					rectRelativeToVideo: sensitivityRectRelativeToVideo
+				};
+
+				// Armazenar o objeto no localStorage
+				localStorage.setItem('sensitivityData', JSON.stringify(sensitivityData));
+
 			}
 			else{
 				// Restaurar a caixa de sensibilidade anterior se o arrasto do mouse foi muito pequeno
-				const savedSensitivityRect = localStorage.getItem('sensitivityRect');
-				if (savedSensitivityRect) {
-					sensitivityRect = JSON.parse(savedSensitivityRect);
+				const savedSensitivityData = localStorage.getItem('sensitivityData');
+				if (savedSensitivityData) {
+					const sensitivityData = JSON.parse(savedSensitivityData);
+					sensitivityRect = sensitivityData.rect;
+					sensitivityRectRelativeToVideo = sensitivityData.rectRelativeToVideo;
+
 					overlay.style.width = `${sensitivityRect.width}px`;
 					overlay.style.height = `${sensitivityRect.height}px`;
 					overlay.style.left = `${sensitivityRect.x}px`;
 					overlay.style.top = `${sensitivityRect.y}px`;
 					overlay.style.display = 'block';
 				}
+
 			}
 		}
 	});
@@ -374,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 	document.addEventListener('fullscreenchange', (event) => {
+		
 		if (document.fullscreenElement) {
 			// Se entramos em tela cheia, defina o vídeo para ocupar todo o espaço
 			video.style.position = 'fixed';
@@ -382,11 +444,28 @@ document.addEventListener('DOMContentLoaded', function() {
 			video.style.width = '100%';
 			video.style.height = '100%';
 			
+			// Calcular a escala de tela cheia
+			const videoAspectRatio = video.videoWidth / video.videoHeight;
+			const screenAspectRatio = window.innerWidth / window.innerHeight;
+
+			let scale;
+			if (screenAspectRatio > videoAspectRatio) {
+				// Se a tela é mais larga do que o vídeo em relação ao aspecto
+				scale = window.innerHeight / video.videoHeight;
+			} else {
+				// Se a tela é mais alta (ou igual) do que o vídeo em relação ao aspecto
+				scale = window.innerWidth / video.videoWidth;
+			}
+
+			// Calcular o deslocamento baseado na diferença entre a largura da tela e a largura do vídeo escalonado
+			const offsetX = (window.innerWidth - (video.videoWidth * scale)) / 2;
+
 			// Ajuste a posição e o tamanho do retângulo.
-			overlay.style.width = `${sensitivityRect.width / video.videoWidth * 100}%`;
-			overlay.style.height = `${sensitivityRect.height / video.videoHeight * 100}%`;
-			overlay.style.left = `${sensitivityRect.x / video.videoWidth * 100}%`;
-			overlay.style.top = `${sensitivityRect.y / video.videoHeight * 100}%`;
+			overlay.style.width = `${sensitivityRect.width * scale}px`;
+			overlay.style.height = `${sensitivityRect.height * scale}px`;
+			overlay.style.left = `${(sensitivityRect.x * scale) - offsetX}px`;
+			overlay.style.top = `${sensitivityRect.y * scale}px`;
+			
 		} else {
 			// Se sairmos da tela cheia, redefina o estilo do vídeo
 			video.style.position = 'static';
@@ -400,6 +479,38 @@ document.addEventListener('DOMContentLoaded', function() {
 			overlay.style.top = `${sensitivityRect.y}px`;
 		}
 	});
+
+	window.addEventListener('resize', function (event) {
+		// Redimensione a área sensível de acordo com a nova proporção de vídeo
+		var video = document.getElementById('webcam');
+		var videoRect = video.getBoundingClientRect();
+		var videoContainer = document.getElementById('videoContainer');
+		var containerRect = videoContainer.getBoundingClientRect();
+
+		var offsetX = videoRect.left - containerRect.left;
+		var offsetY = videoRect.top - containerRect.top;
+
+		// Converta as dimensões absolutas em dimensões relativas ao vídeo
+		var relativeX = (sensitivityRect.x - offsetX) / videoRect.width;
+		var relativeY = (sensitivityRect.y - offsetY) / videoRect.height;
+		var relativeWidth = sensitivityRect.width / videoRect.width;
+		var relativeHeight = sensitivityRect.height / videoRect.height;
+
+		// Atualize as dimensões e a posição de sensitivityRect com base nas dimensões relativas
+		sensitivityRect.x = videoRect.width * relativeX + offsetX;
+		sensitivityRect.y = videoRect.height * relativeY + offsetY;
+		sensitivityRect.width = videoRect.width * relativeWidth;
+		sensitivityRect.height = videoRect.height * relativeHeight;
+
+		// Redesenhe o overlay
+		overlay.style.width = `${sensitivityRect.width}px`;
+		overlay.style.height = `${sensitivityRect.height}px`;
+		overlay.style.left = `${sensitivityRect.x}px`;
+		overlay.style.top = `${sensitivityRect.y}px`;
+	});
+
+
+
 
 	function enterFullscreen(element) {
 		if (element.requestFullscreen) {
@@ -460,9 +571,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			video.srcObject = stream;
 			// Carregar a região selecionada do localStorage quando o vídeo é carregado
 			video.onloadedmetadata = () => {
-				const savedSensitivityRect = localStorage.getItem('sensitivityRect');
-				if (savedSensitivityRect) {
-					sensitivityRect = JSON.parse(savedSensitivityRect);
+				const savedSensitivityData = localStorage.getItem('sensitivityData');
+				if (savedSensitivityData) {
+					const sensitivityData = JSON.parse(savedSensitivityData);
+					sensitivityRect = sensitivityData.rect;
+					sensitivityRectRelativeToVideo = sensitivityData.rectRelativeToVideo;
+
 					overlay.style.width = `${sensitivityRect.width}px`;
 					overlay.style.height = `${sensitivityRect.height}px`;
 					overlay.style.left = `${sensitivityRect.x}px`;
@@ -474,8 +588,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		})
 		.catch(console.error);
 		
-		
-		
+	document.getElementById('navbar-logout-button').addEventListener('click', function () {
+		window.location.href = '/logout';
+	});
+
+
+
+
 		
 		
 		

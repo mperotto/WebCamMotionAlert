@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="static/scripts/login.js"></script>
+</head>
+
+<body class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title text-center">Login</h5>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="clientid">Client ID:</label>
+                    <input type="text" id="clientid" name="clientid" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="secret">Secret:</label>
+                    <input type="password" id="secret" name="secret" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Submit" class="btn btn-primary btn-block">
+                </div>
+            </form>
+            <div id="error-message" class="alert alert-danger d-none" role="alert">
+                {{ message | default("", True) }}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

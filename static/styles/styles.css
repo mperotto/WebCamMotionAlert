@@ -15,14 +15,27 @@ h1 {
 }
 #videoContainer {
     position: relative;
-    display: inline-block;
-	border: 2px solid white; /* Altere a cor conforme necessário */
-    border-radius: 10px; /* Adicione cantos arredondados */
-    padding: 10px; /* Adicione algum espaço interno */	
+    display: block;
+    /* Alterado de inline-block para block */
+    border: 2px solid white;
+    /* Altere a cor conforme necessário */
+    border-radius: 10px;
+    /* Adicione cantos arredondados */
+    padding: 10px;
+    /* Adicione algum espaço interno */
+    text-align: center;
+    /* Adicionado para centralizar o conteúdo */
+    min-width: 1000px;
+    /* Adicionado para manter o tamanho mínimo horizontal */
+    min-height: 500px;
+    /* Adicionado para manter o tamanho mínimo vertical */
 }
 
+
+
+
 video {
-    display: block;
+    display: inline-block;     /* Alterado de block para inline-block */
     width: 640px;
     height: 480px;
     background: #222;
@@ -34,46 +47,66 @@ video {
     pointer-events: none;
     z-index: 1;
     contain: content-box;
+    display: flex;
+    justify-content: center;
 }
-
 
 #controls {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-     gap: 10px; /* Adicione algum espaço entre os elementos */
+    justify-content: center;
+    /* Centraliza os sliders horizontalmente */
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .slider-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 20%;
+    /* Reduz a largura dos sliders para 20% do contêiner */
+    margin: 0 auto;
+    /* Adiciona margens automáticas à esquerda e à direita */
 }
+
 .slider {
-    -webkit-appearance: none; /* Remover a aparência padrão */
-    width: 100%; /* Tornar o controle deslizante tão largo quanto o contêiner */
-    height: 10px; /* Ajuste a altura */
-    border-radius: 5px; /* Adicione cantos arredondados */
-    background: #D3D3D3; /* Cor de fundo */
-    outline: none; /* Remover borda de foco */
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #D3D3D3;
+    outline: none;
 }
 
 .slider::-webkit-slider-thumb {
-    -webkit-appearance: none; /* Remover a aparência padrão */
+    -webkit-appearance: none;
+    /* Remover a aparência padrão */
     appearance: none;
-    width: 20px; /* Largura do manipulador */
-    height: 20px; /* Altura do manipulador */
-    border-radius: 50%;  /* Faz o manipulador circular */
-    background: #4CAF50; /* Cor de fundo do manipulador */
-    cursor: pointer; /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
+    width: 20px;
+    /* Largura do manipulador */
+    height: 20px;
+    /* Altura do manipulador */
+    border-radius: 50%;
+    /* Faz o manipulador circular */
+    background: #4CAF50;
+    /* Cor de fundo do manipulador */
+    cursor: pointer;
+    /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
 }
 
 .slider::-moz-range-thumb {
-    width: 20px; /* Largura do manipulador */
-    height: 20px; /* Altura do manipulador */
-    border-radius: 50%; /* Faz o manipulador circular */
-    background: #4CAF50; /* Cor de fundo do manipulador */
-    cursor: pointer; /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
+    width: 20px;
+    /* Largura do manipulador */
+    height: 20px;
+    /* Altura do manipulador */
+    border-radius: 50%;
+    /* Faz o manipulador circular */
+    background: #4CAF50;
+    /* Cor de fundo do manipulador */
+    cursor: pointer;
+    /* Cursor para "mãozinha" quando passar o mouse sobre o manipulador */
 }
 #snapshots {
     display: flex;
@@ -161,4 +194,16 @@ video {
 
 .img-thumbnail {
     margin-bottom: 30px;
+}
+.navbar .nav-item {
+    display: flex;
+    align-items: center;
+    /* Alinhamento vertical */
+    margin-right: 20px;
+    /* Aumenta o espaçamento entre os itens */
+}
+
+.navbar-label {
+    display: flex;
+    align-items: center;
 }

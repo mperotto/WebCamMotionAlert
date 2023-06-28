@@ -156,6 +156,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					context.font = '20px Arial';
 					context.fillStyle = 'red';
 					context.fillText(timestamp, 10, 30);
+
+					// Use as dimensões e a posição da sensitivityRectRelativeToVideo
+					context.beginPath();
+					context.rect(sensitivityRectRelativeToVideo.x, sensitivityRectRelativeToVideo.y, sensitivityRectRelativeToVideo.width, sensitivityRectRelativeToVideo.height);
+					context.strokeStyle = 'blue'; // Cor da caixa
+					context.lineWidth = 2; // Largura da linha da caixa
+					context.stroke();
+
+
+
+
 					
 					canvas.toBlob(function (blob) {
 						const objectURL = URL.createObjectURL(blob);

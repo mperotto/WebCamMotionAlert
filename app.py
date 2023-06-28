@@ -18,7 +18,7 @@ global clients
 with open('static/clients.json') as f:
     clients = json.load(f)
 
-def require_scopes(*required_scopes):
+def require_scopes(*required_scopes, check_expiry=True):
     def decorator(view):
         @functools.wraps(view)
         def wrapped_view(*args, **kwargs):
@@ -45,10 +45,12 @@ def require_scopes(*required_scopes):
             try:
                 with open('static/secret_key') as f:
                     secret_key = f.read()
-                payload = jwt.decode(token, secret_key, algorithms=['HS256'])
+                options = {'verify_exp': check_expiry}
+                payload = jwt.decode(token, secret_key, algorithms=['HS256'], options=options)
             except jwt.ExpiredSignatureError:
-                   session['message'] = 'Token expired'
-                   return redirect(url_for('login'))
+                if check_expiry:
+                    session['message'] = 'Token expired'
+                    return redirect(url_for('login'))
             except jwt.InvalidTokenError:
                 return jsonify({"msg": "Invalid token"}), 401
 
@@ -129,7 +131,7 @@ def home():
 
 
 @app.route('/upload', methods=['POST'])
-@require_scopes('upload_snapshots')
+@require_scopes('upload_snapshots', check_expiry=False)
 def upload_file():
 
     if 'file' not in request.files:

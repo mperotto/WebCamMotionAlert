@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	let sensitivityRect = null;
 	let sensitivityRectRelativeToVideo = null;
 	let savedPreference = localStorage.getItem('notifications');
+	// Defina o brightnessThreshold aqui para determinar se é dia ou noite
+	const brightnessThreshold = 100; // Este valor pode ser ajustado conforme necessário
+	let sensitivityFactor = 2000;
+
 	
 	const totalSnapshots = 15;  // Defina o valor inicial aqui. Isso pode ser substituído por uma configuração do usuário.
 	let thumbnails = []; // Inicializa a array de thumbnails
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 	// Inicializa o índice de visualização
 	let viewIndex = -1;
-
+	let lastBrightnessCheck = Date.now();
 	function dragMouseDown(e) {
 		e = e || window.event;
 		// obtenha a posição do cursor do mouse no momento do start:
@@ -84,148 +88,28 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 
+	// liminous average of image to determine day or night
+	function calculateAverageBrightness(imageData) {
+		let r, g, b, avg;
+		let colorSum = 0;
 
+		let fifthHeight = Math.floor(imageData.height / 5); // Altura do primeiro quinto vertical da imagem
 
-	function checkForMotion() {
-		const canvas = document.createElement('canvas');
-		const context = canvas.getContext('2d', { willReadFrequently: true });
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-		
-		
-		context.drawImage(video, 0, 0, canvas.width, canvas.height);
-		let currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+		for (let y = 0; y < fifthHeight; y++) {
+			for (let x = 0; x < imageData.width; x++) {
+				let i = (y * imageData.width + x) * 4;
+				r = imageData.data[i];
+				g = imageData.data[i + 1];
+				b = imageData.data[i + 2];
 
-		let movementDetectedAt = null;
-		
-		if (previousFrame && sensitivityRectRelativeToVideo) {
-			let diff = 0;
-			for (let y = sensitivityRectRelativeToVideo.y; y < sensitivityRectRelativeToVideo.y + sensitivityRectRelativeToVideo.height; y++) {
-				for (let x = sensitivityRectRelativeToVideo.x; x < sensitivityRectRelativeToVideo.x + sensitivityRectRelativeToVideo.width; x++) {
-					const i = (y * canvas.width + x) * 4;
-					const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
-					const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
-					const b = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
-					const pixelDiff = r + g + b;
-					diff += pixelDiff;
-
-					// Se movimento foi detectado e ainda não tínhamos a posição inicial
-					if (diff > sensitivitySlider.value * 2000 && !movementDetectedAt) {
-						movementDetectedAt = { x, y };
-						break;
-					}
-				}
+				avg = Math.floor((r + g + b) / 3);
+				colorSum += avg;
 			}
-
-			
-				// Desenha uma seta apontando para a primeira detecção de movimento
-			if (movementDetectedAt) {
-
-				if (Date.now() > nextAlarmTime) {
-
-					// Capturar um novo quadro de vídeo
-					context.drawImage(video, 0, 0, canvas.width, canvas.height);
-					currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
-					
-					// Adicione essa verificação para notificações aqui
-					if (notificationsCheckbox.checked) {
-						alarm.play();
-					}						
-						
-					
-
-						
-					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
-						 // início da linha da seta
-					context.beginPath();
-					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
-					// desenhar linha central da seta para a direita
-					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
-					// desenhar linha superior da ponta da seta
-					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
-					// mover para a base da ponta da seta
-					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
-					// concluir a ponta da seta
-					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
-					context.strokeStyle = 'red';
-					context.lineWidth = 3;
-					context.stroke();
-					// Criar um timestamp e desenhá-lo na imagem
-					const timestamp = new Date().toLocaleString();
-					context.font = '20px Arial';
-					context.fillStyle = 'red';
-					context.fillText(timestamp, 10, 30);
-
-					// Use as dimensões e a posição da sensitivityRectRelativeToVideo
-					context.beginPath();
-					context.rect(sensitivityRectRelativeToVideo.x, sensitivityRectRelativeToVideo.y, sensitivityRectRelativeToVideo.width, sensitivityRectRelativeToVideo.height);
-					context.strokeStyle = 'blue'; // Cor da caixa
-					context.lineWidth = 2; // Largura da linha da caixa
-					context.stroke();
-
-
-
-
-					
-					canvas.toBlob(function (blob) {
-						const objectURL = URL.createObjectURL(blob);
-
-						const snapshot = new Image();
-						snapshot.src = objectURL;
-						snapshot.onload = () => {
-							thumbnails.push(snapshot); // Adicione a thumbnail à array
-							selectedIndex = thumbnails.length - 1;
-
-							while (snapshots.children.length >= totalSnapshots) {
-								snapshots.removeChild(snapshots.children[0]);
-							}
-
-							snapshot.className = 'fade-in'; // adicione essa linha
-							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
-
-							// Inicie o upload da imagem
-							uploadImage(blob).then(() => {
-								console.log('Upload complete');
-							}).catch(err => {
-								console.error('Upload failed:', err);
-							});
-
-							snapshot.onclick = function () {
-								const modalImg = document.getElementById('zoomModal-content');
-								const closeBtn = document.getElementsByClassName('close')[0];
-								modalImg.src = this.src;
-								closeBtn.style.display = 'block';
-								zoomModal.style.display = 'flex';
-
-								// Encontre o índice da miniatura que foi clicada
-								viewIndex = thumbnails.indexOf(this);
-
-								thumbnails.forEach((thumbnail, index) => {
-									if (index === viewIndex) {
-										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
-									} else {
-										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
-									}
-								});
-							};
-
-							// Libere o URL do objeto após o uso
-							//URL.revokeObjectURL(objectURL);
-						};
-					}, 'image/png');
-
-					movementDetectedAt = null;
-				}
-			}
-
-					
-			
 		}
 
-
-		previousFrame = currentFrame;
-		setTimeout(checkForMotion, 200);
+		return colorSum / (imageData.width * fifthHeight);
 	}
+
 	// detectar sombras
 	function rgbToHsv(r, g, b) {
 		r /= 255, g /= 255, b /= 255;
@@ -277,154 +161,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 					const pixelDiff = r + g + b;
 					diff += pixelDiff;
-					let currentHour = new Date().getHours(); // Obtém a hora atual (0 - 23)
-					let sensitivityFactor = (currentHour >= 18 || currentHour < 6) ? 1200 : 2000;  // a noite, diminuir sensibilidade
+					if (Date.now() - lastBrightnessCheck >= 15 * 60 * 1000) {
+						let avgBrightness = calculateAverageBrightness(currentFrame);
+						sensitivityFactor = (avgBrightness < brightnessThreshold) ? 1200 : 2000;
+						lastBrightnessCheck = Date.now();
+					}						
 
 					// Se movimento foi detectado e ainda não tínhamos a posição inicial
 					if (diff > sensitivitySlider.value * sensitivityFactor && !movementDetectedAt) {
-						movementDetectedAt = { x, y };
-						break;
-					}
-				}
-			}
-
-			
-				// Desenha uma seta apontando para a primeira detecção de movimento
-			if (movementDetectedAt) {
-
-				if (Date.now() > nextAlarmTime) {
-
-					// Capturar um novo quadro de vídeo
-					context.drawImage(video, 0, 0, canvas.width, canvas.height);
-					currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
-					
-					// Adicione essa verificação para notificações aqui
-					if (notificationsCheckbox.checked) {
-						alarm.play();
-					}						
-						
-					
-
-						
-					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
-						 // início da linha da seta
-					context.beginPath();
-					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
-					// desenhar linha central da seta para a direita
-					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
-					// desenhar linha superior da ponta da seta
-					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
-					// mover para a base da ponta da seta
-					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
-					// concluir a ponta da seta
-					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
-					context.strokeStyle = 'red';
-					context.lineWidth = 3;
-					context.stroke();
-					// Criar um timestamp e desenhá-lo na imagem
-					const timestamp = new Date().toLocaleString();
-					context.font = '20px Arial';
-					context.fillStyle = 'red';
-					context.fillText(timestamp, 10, 30);
-
-					// Use as dimensões e a posição da sensitivityRectRelativeToVideo
-					context.beginPath();
-					context.rect(sensitivityRectRelativeToVideo.x, sensitivityRectRelativeToVideo.y, sensitivityRectRelativeToVideo.width, sensitivityRectRelativeToVideo.height);
-					context.strokeStyle = 'blue'; // Cor da caixa
-					context.lineWidth = 2; // Largura da linha da caixa
-					context.stroke();
-
-
-
-
-					
-					canvas.toBlob(function (blob) {
-						const objectURL = URL.createObjectURL(blob);
-
-						const snapshot = new Image();
-						snapshot.src = objectURL;
-						snapshot.onload = () => {
-							thumbnails.push(snapshot); // Adicione a thumbnail à array
-							selectedIndex = thumbnails.length - 1;
-
-							while (snapshots.children.length >= totalSnapshots) {
-								snapshots.removeChild(snapshots.children[0]);
-							}
-
-							snapshot.className = 'fade-in'; // adicione essa linha
-							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
-
-							// Inicie o upload da imagem
-							uploadImage(blob).then(() => {
-								console.log('Upload complete');
-							}).catch(err => {
-								console.error('Upload failed:', err);
-							});
-
-							snapshot.onclick = function () {
-								const modalImg = document.getElementById('zoomModal-content');
-								const closeBtn = document.getElementsByClassName('close')[0];
-								modalImg.src = this.src;
-								closeBtn.style.display = 'block';
-								zoomModal.style.display = 'flex';
-
-								// Encontre o índice da miniatura que foi clicada
-								viewIndex = thumbnails.indexOf(this);
-
-								thumbnails.forEach((thumbnail, index) => {
-									if (index === viewIndex) {
-										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
-									} else {
-										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
-									}
-								});
-							};
-
-							// Libere o URL do objeto após o uso
-							//URL.revokeObjectURL(objectURL);
-						};
-					}, 'image/png');
-
-					movementDetectedAt = null;
-				}
-			}
-
-					
-			
-		}
-
-
-		previousFrame = currentFrame;
-		setTimeout(checkForMotion, 200);
-	}
-
-
-
-	function checkForMotion() {
-		const canvas = document.createElement('canvas');
-		const context = canvas.getContext('2d', { willReadFrequently: true });
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-		
-		
-		context.drawImage(video, 0, 0, canvas.width, canvas.height);
-		let currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
-
-		let movementDetectedAt = null;
-		
-		if (previousFrame && sensitivityRectRelativeToVideo) {
-			let diff = 0;
-			for (let y = sensitivityRectRelativeToVideo.y; y < sensitivityRectRelativeToVideo.y + sensitivityRectRelativeToVideo.height; y++) {
-				for (let x = sensitivityRectRelativeToVideo.x; x < sensitivityRectRelativeToVideo.x + sensitivityRectRelativeToVideo.width; x++) {
-					const i = (y * canvas.width + x) * 4;
-					const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
-					const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
-					const b = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
-					const pixelDiff = r + g + b;
-					diff += pixelDiff;
-
-					// Se movimento foi detectado e ainda não tínhamos a posição inicial
-					if (diff > sensitivitySlider.value * 2000 && !movementDetectedAt) {
 						movementDetectedAt = { x, y };
 						break;
 					}

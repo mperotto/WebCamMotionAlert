@@ -86,6 +86,319 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+	function checkForMotion() {
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d', { willReadFrequently: true });
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+		
+		
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		let currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+
+		let movementDetectedAt = null;
+		
+		if (previousFrame && sensitivityRectRelativeToVideo) {
+			let diff = 0;
+			for (let y = sensitivityRectRelativeToVideo.y; y < sensitivityRectRelativeToVideo.y + sensitivityRectRelativeToVideo.height; y++) {
+				for (let x = sensitivityRectRelativeToVideo.x; x < sensitivityRectRelativeToVideo.x + sensitivityRectRelativeToVideo.width; x++) {
+					const i = (y * canvas.width + x) * 4;
+					const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
+					const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
+					const b = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
+					const pixelDiff = r + g + b;
+					diff += pixelDiff;
+
+					// Se movimento foi detectado e ainda não tínhamos a posição inicial
+					if (diff > sensitivitySlider.value * 2000 && !movementDetectedAt) {
+						movementDetectedAt = { x, y };
+						break;
+					}
+				}
+			}
+
+			
+				// Desenha uma seta apontando para a primeira detecção de movimento
+			if (movementDetectedAt) {
+
+				if (Date.now() > nextAlarmTime) {
+
+					// Capturar um novo quadro de vídeo
+					context.drawImage(video, 0, 0, canvas.width, canvas.height);
+					currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+					
+					// Adicione essa verificação para notificações aqui
+					if (notificationsCheckbox.checked) {
+						alarm.play();
+					}						
+						
+					
+
+						
+					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
+						 // início da linha da seta
+					context.beginPath();
+					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
+					// desenhar linha central da seta para a direita
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
+					// desenhar linha superior da ponta da seta
+					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
+					// mover para a base da ponta da seta
+					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
+					// concluir a ponta da seta
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
+					context.strokeStyle = 'red';
+					context.lineWidth = 3;
+					context.stroke();
+					// Criar um timestamp e desenhá-lo na imagem
+					const timestamp = new Date().toLocaleString();
+					context.font = '20px Arial';
+					context.fillStyle = 'red';
+					context.fillText(timestamp, 10, 30);
+
+					// Use as dimensões e a posição da sensitivityRectRelativeToVideo
+					context.beginPath();
+					context.rect(sensitivityRectRelativeToVideo.x, sensitivityRectRelativeToVideo.y, sensitivityRectRelativeToVideo.width, sensitivityRectRelativeToVideo.height);
+					context.strokeStyle = 'blue'; // Cor da caixa
+					context.lineWidth = 2; // Largura da linha da caixa
+					context.stroke();
+
+
+
+
+					
+					canvas.toBlob(function (blob) {
+						const objectURL = URL.createObjectURL(blob);
+
+						const snapshot = new Image();
+						snapshot.src = objectURL;
+						snapshot.onload = () => {
+							thumbnails.push(snapshot); // Adicione a thumbnail à array
+							selectedIndex = thumbnails.length - 1;
+
+							while (snapshots.children.length >= totalSnapshots) {
+								snapshots.removeChild(snapshots.children[0]);
+							}
+
+							snapshot.className = 'fade-in'; // adicione essa linha
+							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
+
+							// Inicie o upload da imagem
+							uploadImage(blob).then(() => {
+								console.log('Upload complete');
+							}).catch(err => {
+								console.error('Upload failed:', err);
+							});
+
+							snapshot.onclick = function () {
+								const modalImg = document.getElementById('zoomModal-content');
+								const closeBtn = document.getElementsByClassName('close')[0];
+								modalImg.src = this.src;
+								closeBtn.style.display = 'block';
+								zoomModal.style.display = 'flex';
+
+								// Encontre o índice da miniatura que foi clicada
+								viewIndex = thumbnails.indexOf(this);
+
+								thumbnails.forEach((thumbnail, index) => {
+									if (index === viewIndex) {
+										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
+									} else {
+										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
+									}
+								});
+							};
+
+							// Libere o URL do objeto após o uso
+							//URL.revokeObjectURL(objectURL);
+						};
+					}, 'image/png');
+
+					movementDetectedAt = null;
+				}
+			}
+
+					
+			
+		}
+
+
+		previousFrame = currentFrame;
+		setTimeout(checkForMotion, 200);
+	}
+	// detectar sombras
+	function rgbToHsv(r, g, b) {
+		r /= 255, g /= 255, b /= 255;
+		let max = Math.max(r, g, b), min = Math.min(r, g, b);
+		let h, s, v = max;
+		let diff = max - min;
+		s = max == 0 ? 0 : diff / max;
+		if (max == min) {
+			h = 0; // achromatic
+		} else {
+			switch (max) {
+				case r: h = (g - b) / diff + (g < b ? 6 : 0); break;
+				case g: h = (b - r) / diff + 2; break;
+				case b: h = (r - g) / diff + 4; break;
+			}
+			h /= 6;
+		}
+		return [h, s, v];
+	}
+	function checkForMotion() {
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d', { willReadFrequently: true });
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+		
+		
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		let currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+
+		let movementDetectedAt = null;
+		
+		if (previousFrame && sensitivityRectRelativeToVideo) {
+			let diff = 0;
+			for (let y = sensitivityRectRelativeToVideo.y; y < sensitivityRectRelativeToVideo.y + sensitivityRectRelativeToVideo.height; y++) {
+				for (let x = sensitivityRectRelativeToVideo.x; x < sensitivityRectRelativeToVideo.x + sensitivityRectRelativeToVideo.width; x++) {
+					const i = (y * canvas.width + x) * 4;
+					const r = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
+					const g = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
+					const b = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
+					const hsv = rgbToHsv(r, g, b);
+					const h = hsv[0], s = hsv[1], v = hsv[2];			
+					
+					const shadowThresholdS = 0.5; // Defina o limite de saturação para a detecção de sombras
+					const shadowThresholdV = 0.5; // Defina o limite de valor para a detecção de sombras
+
+					if (s > shadowThresholdS && v < shadowThresholdV) {
+						// its a shadow, ignore
+						continue;
+					}
+					const pixelDiff = r + g + b;
+					diff += pixelDiff;
+					let currentHour = new Date().getHours(); // Obtém a hora atual (0 - 23)
+					let sensitivityFactor = (currentHour >= 18 || currentHour < 6) ? 1200 : 2000;  // a noite, diminuir sensibilidade
+
+					// Se movimento foi detectado e ainda não tínhamos a posição inicial
+					if (diff > sensitivitySlider.value * sensitivityFactor && !movementDetectedAt) {
+						movementDetectedAt = { x, y };
+						break;
+					}
+				}
+			}
+
+			
+				// Desenha uma seta apontando para a primeira detecção de movimento
+			if (movementDetectedAt) {
+
+				if (Date.now() > nextAlarmTime) {
+
+					// Capturar um novo quadro de vídeo
+					context.drawImage(video, 0, 0, canvas.width, canvas.height);
+					currentFrame = context.getImageData(0, 0, canvas.width, canvas.height);
+					
+					// Adicione essa verificação para notificações aqui
+					if (notificationsCheckbox.checked) {
+						alarm.play();
+					}						
+						
+					
+
+						
+					nextAlarmTime = Date.now() + alarmIntervalSlider.value * 1000;
+						 // início da linha da seta
+					context.beginPath();
+					context.moveTo(movementDetectedAt.x, movementDetectedAt.y); 
+					// desenhar linha central da seta para a direita
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y); 
+					// desenhar linha superior da ponta da seta
+					context.lineTo(movementDetectedAt.x + 20, movementDetectedAt.y - 10);
+					// mover para a base da ponta da seta
+					context.moveTo(movementDetectedAt.x + 20, movementDetectedAt.y + 10);
+					// concluir a ponta da seta
+					context.lineTo(movementDetectedAt.x + 30, movementDetectedAt.y);
+					context.strokeStyle = 'red';
+					context.lineWidth = 3;
+					context.stroke();
+					// Criar um timestamp e desenhá-lo na imagem
+					const timestamp = new Date().toLocaleString();
+					context.font = '20px Arial';
+					context.fillStyle = 'red';
+					context.fillText(timestamp, 10, 30);
+
+					// Use as dimensões e a posição da sensitivityRectRelativeToVideo
+					context.beginPath();
+					context.rect(sensitivityRectRelativeToVideo.x, sensitivityRectRelativeToVideo.y, sensitivityRectRelativeToVideo.width, sensitivityRectRelativeToVideo.height);
+					context.strokeStyle = 'blue'; // Cor da caixa
+					context.lineWidth = 2; // Largura da linha da caixa
+					context.stroke();
+
+
+
+
+					
+					canvas.toBlob(function (blob) {
+						const objectURL = URL.createObjectURL(blob);
+
+						const snapshot = new Image();
+						snapshot.src = objectURL;
+						snapshot.onload = () => {
+							thumbnails.push(snapshot); // Adicione a thumbnail à array
+							selectedIndex = thumbnails.length - 1;
+
+							while (snapshots.children.length >= totalSnapshots) {
+								snapshots.removeChild(snapshots.children[0]);
+							}
+
+							snapshot.className = 'fade-in'; // adicione essa linha
+							snapshots.appendChild(snapshot); // Use appendChild em vez de insertBefore
+
+							// Inicie o upload da imagem
+							uploadImage(blob).then(() => {
+								console.log('Upload complete');
+							}).catch(err => {
+								console.error('Upload failed:', err);
+							});
+
+							snapshot.onclick = function () {
+								const modalImg = document.getElementById('zoomModal-content');
+								const closeBtn = document.getElementsByClassName('close')[0];
+								modalImg.src = this.src;
+								closeBtn.style.display = 'block';
+								zoomModal.style.display = 'flex';
+
+								// Encontre o índice da miniatura que foi clicada
+								viewIndex = thumbnails.indexOf(this);
+
+								thumbnails.forEach((thumbnail, index) => {
+									if (index === viewIndex) {
+										thumbnail.style.border = '3px solid red'; // Adiciona borda vermelha para a miniatura selecionada
+									} else {
+										thumbnail.style.border = 'none'; // Remove a borda das outras miniaturas
+									}
+								});
+							};
+
+							// Libere o URL do objeto após o uso
+							//URL.revokeObjectURL(objectURL);
+						};
+					}, 'image/png');
+
+					movementDetectedAt = null;
+				}
+			}
+
+					
+			
+		}
+
+
+		previousFrame = currentFrame;
+		setTimeout(checkForMotion, 200);
+	}
+
+
 
 	function checkForMotion() {
 		const canvas = document.createElement('canvas');

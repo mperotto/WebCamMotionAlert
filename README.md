@@ -83,8 +83,8 @@ First, you need to install Python in your system. After installing Python, you c
 - **Full-Screen Mode**: This system now allows you to go into full-screen mode by pressing 'F'. This is particularly useful for better monitoring or when viewing on larger screens. Press 'Esc' to exit full-screen mode.
 - **User-Friendly Settings Interface**: The interface has been redesigned to be more intuitive, providing sliders for settings adjustment. These include sensitivity, alarm interval, and motion check interval.
 - **Preservation of User Preferences**: The system will now remember user preferences even after a browser refresh. It uses local storage to save settings such as alarm intervals, sensitivity, and area of focus.
--- 2023-08-03 
-## Updated Features
+
+### 2023-08-03 
 
 - **Average Brightness Calculation**: Added a function to calculate the average brightness of the pixels in an image. This is used to determine whether it is daytime or nighttime.
 - **Time-Based Brightness Check**: We now check the image brightness every 15 minutes instead of on every frame. This improves performance and still allows us to adjust sensitivity based on lighting conditions.
